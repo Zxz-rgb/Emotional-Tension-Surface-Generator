@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sunny Installation Portfolio</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.1/math.min.js"></script>
+    <style>
+  :root {
+    /* Light theme with orange gradient accents */
+    --bg: #f5f7fa;
+    --panel-bg: #ffffff;
+    --panel-alt: #f1f3f6;
+    --accent: #ff7a18;
+    --accent-hover: #ff8f37;
+    --accent-alt: #c24e00;
+    --accent-soft: #ffe1c2;
+    --text-primary: #1e1f22;
+    --text-secondary: #555b64;
+    --border-color: #d7dde4;
+    --accent-gradient: linear-gradient(90deg,#ffb347 0%, #ff7a18 55%, #ff6a00 100%);
+    --button-gradient: linear-gradient(180deg,#ff9e3d 0%, #ff7a18 90%);
+    --button-gradient-hover: linear-gradient(180deg,#ffb052 0%, #ff8f37 90%);
+    --slider-track-gradient: linear-gradient(90deg,#ffe3c8,#ffd1a3,#ffc086,#ffad63);
+    --font-stack: 'Helvetica Neue', 'Segoe UI', Arial, sans-serif;
+    --mono: 'Courier New', ui-monospace, monospace;
+    --transition: 120ms cubic-bezier(.4,0,.2,1);
+    --sidebar-width: 460px;
+  }
+      html, body { height:100%; }
+      body {
+        font-family: var(--font-stack);
+        margin: 0;
+        background: var(--bg);
+        color: var(--text-primary);
+        -webkit-font-smoothing: antialiased;
+      }
+      @font-face {
+        font-family: 'FacadeEst';
+        src: url('fonts/Facade-Est.otf') format('opentype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+  label { display:block; margin: 6px 0 4px; font-size:13px; font-weight:400; letter-spacing:.3px; }
+      input[type="range"] { width:100%; appearance:none; background:transparent; cursor:pointer; }
+  input[type="range"]::-webkit-slider-runnable-track { height:6px; background:var(--slider-track-gradient); border:1px solid var(--border-color); }
+    input[type="range"]::-webkit-slider-thumb { margin-top:-6px; width:14px; height:14px; background:var(--accent); border:1px solid #c24e00; appearance:none; box-shadow:0 0 0 2px #fff; }
+      input[type="range"]:focus { outline:none; }
+  .slider-group { margin-bottom:16px; }
+  .slider-group .head { display:flex; align-items:center; justify-content:space-between; }
+  .slider-group .head span { font-size:12px; color:var(--text-secondary); }
+  #controlsWrapper { display:flex; flex-direction:column; gap:18px; position:relative; }
+      #controls {
+  padding: 22px 20px 24px;
+  background: var(--panel-bg);
+        border: 2px solid var(--border-color);
+        box-shadow: 0 0 0 1px #0b0d11, 0 3px 10px -3px rgba(0,0,0,.55), 0 8px 30px -12px rgba(0,0,0,.6);
+        display:flex; flex-direction:column; gap:4px;
+      }
+      #controls::before {
+        content:"EMOTION PARAMETERS";
+        font-size:13px; letter-spacing:2.5px; font-weight:700; color:var(--accent-alt); display:block; margin-bottom:14px;
+      }
+      button {
+        background: var(--button-gradient);
+        color: #fff;
+        border: 2px solid #ff891f;
+        font-size: 11px;
+        padding: 7px 18px 7px;
+        font-weight:600;
+        letter-spacing:.35px;
+        cursor:pointer;
+        transition: var(--transition);
+        position:relative;
+        min-height:30px;
+        line-height:1.0;
+        flex: 0 0 auto;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+      }
+      .row.primary-actions { width:100%; }
+      .row.primary-actions button { flex:1 1 0; min-width:0; }
+      .row.primary-actions button + button { margin-left:8px; }
+      .row.secondary-actions button { flex:0 0 auto; }
+      #recordBtn { flex:0 0 auto; }
+      /* Align secondary actions so Record button right edge lines up with last primary action button */
+      .row.secondary-actions { justify-content:space-between; }
+      /* Prevent layout shift when focus outline appears */
+      button:focus { outline:2px solid var(--accent-alt); outline-offset:0; }
+  button:hover, button:focus { background: var(--button-gradient-hover); border-color: #ff9d3d; }
+      button:active { filter:brightness(.85); }
+      button + button { margin-left:6px; }
+  #actions { display:flex; flex-direction:column; gap:14px; margin-top:4px; }
+  .row { display:flex; gap:8px; align-items:center; width:100%; }
+  .row.wrap { flex-wrap:wrap; }
+  #actions label { display:inline-flex; align-items:center; margin:0; font-weight:300; font-size:12px; }
+      #actions input[type="checkbox"] { margin-right:6px; accent-color: var(--accent); }
+      #functionDisplay {
+        font-family: var(--mono);
+    background: var(--panel-alt);
+        padding: 12px 14px 10px;
+        border: 2px solid var(--border-color);
+        margin: 0 0 14px;
+        font-size: 12.4px;
+        letter-spacing:.4px;
+        line-height:1.3;
+        white-space:nowrap;
+        overflow:auto;
+    box-shadow: inset 0 0 0 1px #121315;
+      }
+  #plots > div { width:100%; height:65vh; background:#000; border:2px solid var(--border-color); box-shadow:0 0 0 1px #0b0f15, 0 4px 18px -6px rgba(0,0,0,.7); }
+      @media (max-width:700px){ #plots > div { height:80vh; } }
+      /* Utility */
+      .inline-label { display:inline-flex; align-items:center; font-size:12px; margin-right:14px; }
+  .inline-label input[type="number"] { background:#ffffff; border:2px solid var(--border-color); color:var(--text-primary); padding:4px 6px; font-size:12px; width:70px; }
+      .inline-label input[type="number"]:focus { outline:2px solid var(--accent); outline-offset:0; }
+      ::-webkit-scrollbar { height:10px; width:10px; }
+      ::-webkit-scrollbar-track { background:#eceff3; }
+      ::-webkit-scrollbar-thumb { background:#ffb347; border:2px solid #f5f7fa; }
+        ::-webkit-scrollbar-thumb:hover { background:#ff9e3d; }
+      /* Hide main (right side) vertical scrollbar while preserving scroll */
+      body::-webkit-scrollbar { width:0; }
+      #mainContent { scrollbar-width:none; }
+      #mainContent::-webkit-scrollbar { display:none; }
+      a { color:var(--accent); text-decoration:none; }
+      a:hover { text-decoration:underline; }
+      /* Remove any rounding if user agent injects */
+      * { border-radius:0 !important; }
+    </style>
+  </head>
+  <body>
+  <h2 id="pageTitle">Sunny Installation Portfolio｜Emotional Tension Surface Generator</h2>
+  <div id="sidebarFixed">
+      <div id="controlsWrapper">
+        <div id="controls">
+          <div class="slider-group">
+            <div class="head"><label for="joy">Joy to Sadness</label><span id="joyVal">1</span></div>
+            <input type="range" id="joy" min="-1" max="1" step="0.1" value="1" oninput="document.getElementById('joyVal').innerText = this.value">
+          </div>
+          <div class="slider-group">
+            <div class="head"><label for="trust">Trust to Disgust</label><span id="trustVal">1</span></div>
+            <input type="range" id="trust" min="-1" max="1" step="0.1" value="1" oninput="document.getElementById('trustVal').innerText = this.value">
+          </div>
+          <div class="slider-group">
+            <div class="head"><label for="fear">Anger to Fear</label><span id="fearVal">1</span></div>
+            <input type="range" id="fear" min="-1" max="1" step="0.1" value="1" oninput="document.getElementById('fearVal').innerText = this.value">
+          </div>
+          <div class="slider-group">
+            <div class="head"><label for="surprise">Anticipation to Surprise</label><span id="surpriseVal">1</span></div>
+            <input type="range" id="surprise" min="-1" max="1" step="0.1" value="1" oninput="document.getElementById('surpriseVal').innerText = this.value">
+          </div>
+          <div class="slider-group">
+            <div class="head"><label for="naturalness">Naturalness</label><span id="naturalnessVal">1</span></div>
+            <input type="range" id="naturalness" min="0" max="1" step="0.1" value="1" oninput="document.getElementById('naturalnessVal').innerText = this.value">
+          </div>
+          <div id="actions">
+            <div class="row primary-actions">
+              <button onclick="updatePlot()" id="btnGenerate">Generate</button>
+              <button onclick="downloadPlot()" id="btnExport">Export PNG</button>
+              <button onclick="copyFunction()" id="btnCopy">Copy Expression</button>
+            </div>
+            <div class="row secondary-actions">
+              <label class="inline-label">Duration(s): <input id="rotDuration" type="number" value="20" min="1"></label>
+              <button id="recordBtn" onclick="startRotationAndRecord360()">Record Fixed Angle</button>
+            </div>
+            <div class="row wrap">
+              <label><input type="checkbox" id="autoRotateChk"> Auto rotate</label>
+              <label><input type="checkbox" id="autoRecordChk"> Auto record</label>
+              <label><input type="checkbox" id="animateChk" checked> Animate noise</label>
+              <label>Noise amplitude = Naturalness</label>
+            </div>
+          </div>
+          <div id="functionDisplay"></div>
+        <div id="sidebarImages">
+          <img src="gifs/01.gif" alt="gif 1">
+          <img src="gifs/02.gif" alt="gif 2">
+          <img src="gifs/source.gif" alt="gif 3">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="mainContent">
+    <div id="plots">
+      <div id="plot"></div>
+      <div id="plotBlack"></div>
+    </div>
+  </div>
+  <style>
+    /* Fixed sidebar and centered title adjustments (light theme) */
+    #pageTitle { position:fixed; top:0; left:0; right:0; margin:0; padding:28px 0 22px; font-size:44px; font-family:'FacadeEst', var(--font-stack); letter-spacing:1.6px; font-weight:400; text-align:center; color:#fff; z-index:60; background:var(--accent-gradient); box-shadow:0 3px 10px -4px rgba(0,0,0,.25); }
+    #sidebarFixed { position:fixed; top:150px; left:0; width:var(--sidebar-width); bottom:0; overflow-y:auto; padding:0 30px 40px; box-sizing:border-box; }
+    #mainContent { margin-left:var(--sidebar-width); padding:170px 46px 80px; }
+    #plots { display:grid; gap:34px; }
+    #sidebarImages { position:relative; margin-top:28px; display:flex; flex-direction:column; gap:14px; }
+    #sidebarImages img { width:100%; display:block; border:2px solid var(--border-color); box-shadow:0 0 0 1px #121315, 0 4px 12px -4px rgba(0,0,0,.55); background:#000; }
+    @media (max-width:1100px){
+      #sidebarFixed { position:static; width:auto; padding:0 24px 30px; }
+      #mainContent { margin-left:0; padding:110px 24px 60px; }
+  #pageTitle { position:static; padding:34px 0 20px; font-size:38px; background:var(--accent-gradient); }
+      #sidebarFixed { position:static; width:auto; padding:0 24px 34px; top:auto; }
+    }
+  </style>
+
+    <script>
+      var currentFunction = '';
+
+      // Waits for the Plotly canvas to exist for the given plotId. Resolves with the canvas or null if timeout.
+      function waitForPlotCanvas(plotId, timeoutMs){
+        return new Promise(function(resolve){
+          var waited = 0; var interval = 100;
+          function check(){
+            var container = document.getElementById(plotId);
+            if (container){
+              var cvs = container.getElementsByTagName('canvas');
+              if (cvs && cvs.length>0) return resolve(cvs[0]);
+            }
+            waited += interval;
+            if (waited >= timeoutMs) return resolve(null);
+            setTimeout(check, interval);
+          }
+          check();
+        });
+      }
+
+      function updatePlot() {
+        var joy = parseFloat(document.getElementById('joy').value);
+        var trust = parseFloat(document.getElementById('trust').value);
+        var fear = parseFloat(document.getElementById('fear').value);
+        var surprise = parseFloat(document.getElementById('surprise').value);
+        var N = parseFloat(document.getElementById('naturalness').value);
+
+        var points = [[1, 1], [-1, 1], [-1, -1], [1, -1]];
+        var Z = [joy, trust, fear, surprise];
+        var M = points.map(function(p){ return [p[0]*p[1], p[0], p[1], 1]; });
+
+        var MT = math.transpose(M);
+        var MTM = math.multiply(MT, M);
+        var MTB = math.multiply(MT, Z);
+        var coeffs = math.lusolve(MTM, MTB).map(function(r){ return r[0]; });
+        var a = coeffs[0], b = coeffs[1], c = coeffs[2], d = coeffs[3];
+
+        currentFunction = 'z(x, y) = ' + a.toFixed(3) + '\u00b7xy + ' + b.toFixed(3) + '\u00b7x + ' + c.toFixed(3) + '\u00b7y + ' + d.toFixed(3) + ' (Controlled by N)';
+        document.getElementById('functionDisplay').innerText = currentFunction;
+
+  var resolution = Math.round(N * 150 + 50);
+  if (resolution > 300) resolution = 300; // cap resolution to avoid extreme slowdown
+        var x = [], y = [], z = [], color = [];
+        for (var i=0;i<=resolution;i++){
+          var xi = -1 + 2 * i / resolution; var rowX=[]; var rowY=[]; var rowZ=[]; var rowColor=[];
+          for (var j=0;j<=resolution;j++){
+            var yj = -1 + 2 * j / resolution;
+            rowX.push(xi); rowY.push(yj);
+            var zVal = a * xi * yj + b * xi + c * yj + d; rowZ.push(zVal);
+            var distance = (xi*xi + yj*yj) / 2; var exponent = 1.5 - N; var mapped = Math.pow(distance, exponent);
+            rowColor.push(mapped);
+          }
+          x.push(rowX); y.push(rowY); z.push(rowZ); color.push(rowColor);
+        }
+
+        var surface = {
+          type: 'surface', x: x, y: y, z: z,
+          surfacecolor: color, colorscale: 'Jet', showscale: true, cmin: 0, cmax: 1,
+          colorbar: { title: '', tickvals: [0, N, 1], ticktext: ['Low', 'Naturalness: ' + N.toFixed(2), 'High'], thickness: 15, tickfont: { color: 'black', size: 12 }, len: 1, outlinewidth: 0 },
+          opacity: 1, lighting: { ambient: 0.6, diffuse: 0.8, specular: 0.1 }, hoverinfo: 'skip', name: ''
+        };
+
+        var edgeCoords = [ [1,1,1], [-1,1,1], [-1,-1,1], [1,-1,1], [1,1,1], [1,1,-1], [-1,1,-1], [-1,-1,-1], [1,-1,-1], [1,1,-1], [-1,1,-1], [-1,1,1], [-1,-1,1], [-1,-1,-1], [1,-1,-1], [1,-1,1], [1,1,1] ];
+        var cubeLines = { type: 'scatter3d', mode: 'lines', line: { color: 'black', width: 2 }, x: edgeCoords.map(function(p){return p[0];}), y: edgeCoords.map(function(p){return p[1];}), z: edgeCoords.map(function(p){return p[2];}), name: '' };
+
+        var labels = { type: 'scatter3d', mode: 'text', text: ['Joy','Trust','Anger','Anticipation','Sadness','Disgust','Fear','Surprise'], textposition: 'top center', textfont: { size: 14, color: 'black' }, x: [1,-1,-1,1,1,-1,-1,1], y: [1,1,-1,-1,1,1,-1,-1], z: [1.05,1.05,1.05,1.05,-1.2,-1.2,-1.2,-1.2] };
+
+        var layoutFramed = {
+          scene: {
+            xaxis:{title:'', range:[-1.2,1.2]},
+            yaxis:{title:'', range:[-1.2,1.2]},
+            zaxis:{title:'', range:[-1.2,1.2]}
+          },
+          title: currentFunction,
+          margin: { l:0, r:0, b:0, t:50 },
+          showlegend:false
+        }; 
+
+        Plotly.newPlot('plot', [surface, cubeLines, labels], layoutFramed);
+
+        var surfaceBlack = JSON.parse(JSON.stringify(surface));
+        if (surfaceBlack.colorbar && surfaceBlack.colorbar.tickfont) surfaceBlack.colorbar.tickfont.color = '#fff';
+        var layoutBlack = { paper_bgcolor: '#000', plot_bgcolor: '#000', scene: { xaxis:{visible:false}, yaxis:{visible:false}, zaxis:{visible:false}, bgcolor:'#000' }, margin:{ l:0, r:0, b:0, t:20 }, showlegend:false };
+        Plotly.newPlot('plotBlack', [surfaceBlack], layoutBlack).then(function(){
+          // after plotBlack has been drawn, if auto-rotate is requested, trigger it
+          var auto = document.getElementById('autoRotateChk') && document.getElementById('autoRotateChk').checked;
+          var autoRecord = document.getElementById('autoRecordChk') && document.getElementById('autoRecordChk').checked;
+          var dur = parseFloat(document.getElementById('rotDuration').value) || 20;
+          if (auto) {
+            if (autoRecord) startRotationAndRecord(dur, 360, 30);
+            else rotatePlot('plotBlack', dur, 360);
+          }
+          // store base z/x/y for animation
+            window._baseSurfaceZ = z;
+            window._baseSurfaceX = x;
+            window._baseSurfaceY = y;
+            // map Naturalness (N) directly to noise amplitude
+            window._naturalness = N;
+          if (document.getElementById('animateChk') && document.getElementById('animateChk').checked) startAnimationLoop(); else stopAnimationLoop();
+        });
+      }
+
+      function downloadPlot(){ Plotly.downloadImage('plot', { format: 'png', filename: 'Sunny_Emotion_Surface' }); }
+
+      // rotatePlot animates the scene.camera eye around Y axis by `degrees` over `durationSec` seconds.
+      // If shouldAnimate is true, it will also update the surface animation in sync
+      function rotatePlot(plotId, durationSec, degrees, onComplete, shouldAnimate){
+        durationSec = typeof durationSec === 'number' ? durationSec : 20;
+        degrees = typeof degrees === 'number' ? degrees : 369;
+        shouldAnimate = (shouldAnimate !== false); // default to true
+        var gd = document.getElementById(plotId);
+        if (!gd) { console.warn('rotatePlot: plot container not found', plotId); if (onComplete) onComplete(); return; }
+        // determine radius and camY (keep camY constant to avoid up/down tilt)
+        var radius = 2.2, camY = 0.8;
+        try{
+          var currentCam = (gd && gd._fullLayout && gd._fullLayout.scene && gd._fullLayout.scene.camera) || null;
+          if(currentCam && currentCam.eye){
+            var e = currentCam.eye;
+            var r = Math.sqrt(e.x*e.x + e.y*e.y + e.z*e.z);
+            if(r > 0.2 && r < 100){ radius = r; camY = e.y; }
+          }
+        } catch(e){}
+
+        var startTime = performance.now(); 
+        var durationMs = durationSec*1000; 
+        var total = degrees;
+        // lock the camera center and up vector so we only rotate horizontally
+        var center = { x: 0, y: 0, z: 0 };
+        var up = { x: 0, y: 1, z: 0 };
+        
+        // Track animation time for continuous noise animation
+        if (!window._rotationAnimStartTime) {
+          window._rotationAnimStartTime = performance.now() / 1000;
+        }
+
+        function step(now){
+          var t = Math.min(1, (now-startTime)/durationMs);
+          var angleDeg = total * t;
+          var ang = angleDeg * Math.PI / 180;
+          var eye = { x: radius * Math.cos(ang), y: camY, z: radius * Math.sin(ang) };
+          
+          // Update camera rotation
+          Plotly.relayout(plotId, { 'scene.camera': { eye: eye, center: center, up: up } });
+          
+          // IMPORTANT: Also update the animation during rotation (for noise waviness)
+          if (shouldAnimate && document.getElementById('animateChk') && document.getElementById('animateChk').checked) {
+            var animTime = (now / 1000) - window._rotationAnimStartTime;
+            stepAnimation(animTime);
+          }
+          
+          if(t < 1) {
+            requestAnimationFrame(step);
+          } else {
+            window._rotationAnimStartTime = null; // reset for next rotation
+            if (onComplete) onComplete();
+          }
+        }
+        requestAnimationFrame(step);
+      }
+
+      // startRotationAndRecord ensures canvas exists, starts MediaRecorder, then rotates the plot and stops recording.
+      // convenience wrapper that records exactly one 360° rotation and downloads it
+      function startRotationAndRecord360(){
+        var dur = parseFloat(document.getElementById('rotDuration').value) || 20;
+        // default to 30 FPS for smooth video
+        startRotationAndRecord(dur, 0, 30); // Changed degrees to 0 to keep fixed angle
+      }
+
+      // generalized startRotationAndRecord(durationSec, degrees)
+      function startRotationAndRecord(durationSec, degrees, fps){
+        durationSec = typeof durationSec === 'number' ? durationSec : (parseFloat(document.getElementById('rotDuration').value) || 20);
+        degrees = typeof degrees === 'number' ? degrees : 0; // Changed default to 0 (no rotation)
+        fps = typeof fps === 'number' && fps > 0 ? fps : 30;
+        var plotId = 'plotBlack';
+        
+        // Ensure we have the base surface data
+        if (!window._baseSurfaceZ) {
+          alert('请先点击 Generate 按钮生成图像！');
+          return;
+        }
+        
+        waitForPlotCanvas(plotId, 5000).then(function(canvas){
+          if (!canvas){ alert('无法找到用于录制的 canvas。请先点击 Generate Surface 并确保图像已渲染。'); return; }
+          if (typeof MediaRecorder === 'undefined'){ alert('MediaRecorder API 不受该浏览器支持。请使用 Chrome 或 Edge。'); return; }
+          var stream = canvas.captureStream(fps);
+          var mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
+          var recorder; try{ recorder = new MediaRecorder(stream, { mimeType: mime }); } catch(e){ try{ recorder = new MediaRecorder(stream); } catch(err){ alert('无法启动录制: '+err); return; } }
+          var chunks = [];
+          recorder.ondataavailable = function(ev){ if(ev.data && ev.data.size) chunks.push(ev.data); };
+          recorder.onerror = function(ev){ console.error('Recorder error', ev); };
+          recorder.onstop = function(){ 
+            var blob = new Blob(chunks, { type: mime }); 
+            var url = URL.createObjectURL(blob); 
+            var a = document.createElement('a'); 
+            a.style.display='none'; 
+            a.href = url; 
+            a.download = 'fixed_angle_' + durationSec + 's.webm'; 
+            document.body.appendChild(a); 
+            a.click(); 
+            setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 1500); 
+          };
+          var btn = document.getElementById('recordBtn'); 
+          if(btn){ btn.disabled=true; btn.innerText='Recording...'; }
+          
+          // Stop the existing animation loop to avoid conflicts
+          stopAnimationLoop();
+          
+          // Reset animation start time for clean recording
+          window._rotationAnimStartTime = performance.now() / 1000;
+          
+          recorder.start();
+          
+          // For fixed angle recording, only animate the noise without rotation
+          if (degrees === 0) {
+            // Record at fixed angle - just animate the surface
+            var startTime = performance.now();
+            var durationMs = durationSec * 1000;
+            
+            function animateOnly(now) {
+              var t = Math.min(1, (now - startTime) / durationMs);
+              
+              // Update animation during recording
+              if (document.getElementById('animateChk') && document.getElementById('animateChk').checked) {
+                var animTime = (now / 1000) - window._rotationAnimStartTime;
+                stepAnimation(animTime);
+              }
+              
+              if (t < 1) {
+                requestAnimationFrame(animateOnly);
+              } else {
+                recorder.stop();
+                if(btn){ btn.disabled=false; btn.innerText='Record Fixed Angle'; }
+                
+                // Restart the animation loop if it should be running
+                if (document.getElementById('animateChk') && document.getElementById('animateChk').checked) {
+                  startAnimationLoop();
+                }
+              }
+            }
+            requestAnimationFrame(animateOnly);
+          } else {
+            // Original behavior: rotate while recording
+            rotatePlot(plotId, durationSec, degrees, function(){ 
+              recorder.stop(); 
+              if(btn){ btn.disabled=false; btn.innerText='Record Fixed Angle'; }
+              
+              // Restart the animation loop if it should be running
+              if (document.getElementById('animateChk') && document.getElementById('animateChk').checked) {
+                startAnimationLoop();
+              }
+            }, true); // shouldAnimate = true
+          }
+        });
+      }
+
+      // ---------------------- Noise & Particles Animation ----------------------
+  var _animId = null;
+
+      function fbmNoise(x, y, t){
+        // cheap pseudo-noise using sin/cos combination for a natural feel
+        var n = 0;
+        n += 0.6 * Math.sin(2.0 * x + 1.7 * y + 1.3 * t);
+        n += 0.3 * Math.cos(3.5 * x - 2.2 * y + 0.6 * t);
+        n += 0.15 * Math.sin(5.1 * (x + y) + 0.3 * t);
+        return n * 0.5; // scale down
+      }
+
+      // (particles removed)
+
+      function startAnimationLoop(){
+        if (_animId) return; // already running
+        
+        // Initialize animation start time if not set
+        if (!window._rotationAnimStartTime) {
+          window._rotationAnimStartTime = performance.now() / 1000;
+        }
+        
+        function loop(now){
+          var animTime = (now / 1000) - window._rotationAnimStartTime;
+          stepAnimation(animTime);
+          _animId = requestAnimationFrame(loop);
+        }
+        _animId = requestAnimationFrame(loop);
+      }
+
+      function stopAnimationLoop(){ 
+        if(_animId){ 
+          cancelAnimationFrame(_animId); 
+          _animId = null; 
+        } 
+      }
+
+      function stepAnimation(t){
+        try{
+          if (!window._baseSurfaceZ) return;
+          // amplitude is directly mapped from naturalness (0..1)
+          var amp = (typeof window._naturalness === 'number') ? window._naturalness : 0.05;
+          var rows = window._baseSurfaceZ.length, cols = window._baseSurfaceZ[0].length;
+          var newZ = [];
+          for(var i=0;i<rows;i++){
+            var row = [];
+            for(var j=0;j<cols;j++){
+              var bx = window._baseSurfaceX[i][j];
+              var by = window._baseSurfaceY[i][j];
+              var bz = window._baseSurfaceZ[i][j];
+              var n = fbmNoise(bx*2, by*2, t*1.2);
+              row.push(bz + n * amp);
+            }
+            newZ.push(row);
+          }
+          // update surface on plotBlack (trace 0)
+          Plotly.restyle('plotBlack', { z: [newZ] }, [0]);
+          // (particles removed)
+        }catch(e){ console.warn('stepAnimation error', e); }
+      }
+
+      function copyFunction(){ navigator.clipboard.writeText(currentFunction).then(function(){ alert('Function copied!'); }); }
+      // (Removed syncPanels and plotsPanel wrapper per revert request)
+    </script>
+  </body>
+  </html>
